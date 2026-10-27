@@ -833,6 +833,55 @@
 	};
 };
 
+&camss {
+	vdda-phy-supply = <&vreg_l6d>;
+	vdda-pll-supply = <&vreg_l4d>;
+
+	status = "okay";
+
+	ports {
+		port@3 {
+			csiphy3_ep: endpoint@0 {
+				reg = <0>;
+				clock-lanes = <7>;
+				data-lanes = <0 1 2 3>;
+				remote-endpoint = <&rk628_ep>;
+			};
+		};
+	};
+};
+
+&cci2 {
+	pinctrl-0 = <&cci2_i2c1_default>;
+	pinctrl-1 = <&cci2_i2c1_sleep>;
+
+	status = "okay";
+};
+
+&cci2_i2c1 {
+	clock-frequency = <400000>;
+
+	hdmi-receiver@50 {
+		compatible = "rockchip,rk628-csi-v4l2";
+		reg = <0x50>;
+
+		reset-gpios = <&tlmm 15 GPIO_ACTIVE_LOW>;
+		pinctrl-0 = <&cam_rk628_default>;
+		pinctrl-names = "default";
+
+		/* No interrupt wiring: use the driver's polling mode. */
+		continues-clk;
+
+		port {
+			rk628_ep: endpoint {
+				clock-lanes = <0>;
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&csiphy3_ep>;
+			};
+		};
+	};
+};
+
 &dispcc0 {
 	status = "okay";
 };
@@ -1906,6 +1955,13 @@
 		"PIN_38", "PIN_40", "PIN_12", "PIN_7",
 		/* GPIO_176 ~ GPIO_179 */
 		"", "", "", "";
+
+	cam_rk628_default: cam-rk628-default-state {
+		pins = "gpio15";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
 
 	dp_hpd_default: dp-hpd-default-state {
 		pins = "gpio2";
